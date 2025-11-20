@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Light theme variables */
+:root {
+  --primary-blue: #2563eb;
+  --dark-blue: #1e40af;
+  --light-blue: #dbeafe;
+  --text-dark: #1f2937;
+  --text-light: #6b7280;
+  --background: #f8fafc;
+  --card-bg: #ffffff;
+  --nav-bg: #1e40af;
+  --border-color: #e5e7eb;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+  --primary-blue: #3b82f6;
+  --dark-blue: #1e40af;
+  --light-blue: #1e3a8a;
+  --text-dark: #f9fafb;
+  --text-light: #d1d5db;
+  --background: #111827;
+  --card-bg: #1f2937;
+  --nav-bg: #1e3a8a;
+  --border-color: #374151;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--text-dark);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Background with subtle tax/account image */
+.app-background {
+  background-image: 
+    linear-gradient(var(--background), var(--background)),
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.03"><defs><pattern id="graph" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%231e40af" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23graph)"/><circle cx="30" cy="30" r="8" fill="%232563eb" opacity="0.1"/><circle cx="70" cy="50" r="12" fill="%231e40af" opacity="0.1"/><rect x="40" y="20" width="20" height="15" fill="%232563eb" opacity="0.1"/><path d="M20 70 L50 70 L35 50 Z" fill="%231e40af" opacity="0.1"/></svg>');
+  background-size: cover, 200px;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-blue);
+  border-radius: 3px;
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.7;
+}
+
+/* Focus styles for better accessibility */
+input:focus, button:focus {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+}
+
+/* Dark mode toggle styles */
+.theme-toggle {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.theme-toggle:hover {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* Professional button styles */
+.btn-primary {
+  background: var(--primary-blue);
+  color: white;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: var(--dark-blue);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--primary-blue);
+  color: var(--primary-blue);
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: var(--light-blue);
+  transform: translateY(-1px);
+}
+
+/* Navbar styles */
+.navbar {
+  background: var(--nav-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #bfdbfe;
+  transform: translateY(-1px);
+}
+
+.nav-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
