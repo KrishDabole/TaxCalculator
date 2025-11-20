@@ -15,7 +15,6 @@ history, JWT-based security, and responsive UI.
 -   [Build & Deployment](#-build--deployment)\
 -   [Validation & Testing](#-validation--testing)\
 -   [Database Verification](#-database-verification)\
--   [Troubleshooting](#-troubleshooting)
 
 ------------------------------------------------------------------------
 
