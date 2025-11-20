@@ -2,7 +2,7 @@
 
 A 3 tier full-stack web application for calculating income tax under both
 **Old** and **New** Regimes with user authentication, calculation
-history, JWT-based security, and responsive UI.
+history and responsive UI.
 
 ## 📋 Table of Contents
 
