@@ -268,7 +268,7 @@ FROM tax_calculations;
 ### Kill Process on Port 8080
 
 ``` bash
-sudo lsof -i :8080 or 
+sudo lsof -i :8080 #or 
 ps aux | grep java
 ps aux | grep node
 sudo kill -9 <PID>
