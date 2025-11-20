@@ -1,6 +1,6 @@
 # 🧮 Tax Calculator Application
 
-A full-stack web application for calculating income tax under both
+A 3 tier full-stack web application for calculating income tax under both
 **Old** and **New** Regimes with user authentication, calculation
 history, JWT-based security, and responsive UI.
 
@@ -79,7 +79,7 @@ TaxCalcWebApp/
 │               └── static
 │                   └── index.html
 
-## Frontend (React + Vite)
+## Frontend (React + Tailwind + Vite)
 
 ├── frontend
 │   ├── .env
@@ -109,6 +109,7 @@ TaxCalcWebApp/
 │   └── vite.config.js
 └── README.md
 
+## Database (Postgres SQL)
 
 ------------------------------------------------------------------------
 
@@ -232,10 +233,33 @@ npm run dev
 ``` sql
 
 
+# Login
+sudo -u postgres psql -d tax_calculator
+psql -h localhost -U tax_user -d tax_calculator  #or
+psql postgresql://tax_user:tax_pass@localhost:5432/tax_calculator #or
+# Switch to postgres user first
+sudo -i -u postgres
+psql -d tax_calculator -U tax_user
 
+# Check users table
+SELECT * FROM app_user;
 SELECT id, username, full_name FROM app_user;
 SELECT * FROM tax_calculations;
 SELECT calculated_at AT TIME ZONE 'Asia/Kolkata' FROM tax_calculations;
+
+# Check tax calculations
+SELECT id, regime, financial_year, total_package, calculated_at 
+FROM tax_calculations 
+WHERE user_id = (SELECT id FROM app_user WHERE username = 'exampleuser');
+
+# Count records
+SELECT COUNT(*) as total_users FROM app_user;
+SELECT COUNT(*) as total_calculations FROM tax_calculations;
+
+# Verify IST timestamps
+SELECT id, calculated_at AT TIME ZONE 'Asia/Kolkata' as ist_time 
+FROM tax_calculations;
+\q
 ```
 
 ------------------------------------------------------------------------
