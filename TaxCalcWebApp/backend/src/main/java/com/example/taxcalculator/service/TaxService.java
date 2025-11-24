@@ -13,28 +13,35 @@ public class TaxService {
         String regime = request.getRegime() == null ? "NEW" : request.getRegime().toUpperCase();
         String financialYear = request.getFinancialYear() == null ? "2025-2026" : request.getFinancialYear();
 
-        // Salary breakdown (matching Excel formulas)
-        double basicSalary = totalPackage * 0.4;
-        double hra = totalPackage * 0.2;
+        // Calculate total CTC (Total Package - Variable Pay)
+        double totalCTC = totalPackage - variablePay;
+
+        // Salary breakdown (matching Excel formulas exactly)
+        double basicSalary = totalCTC * 0.4;
+        double hra = totalCTC * 0.2;
         double pf = basicSalary * 0.12;
-        double splAllowance = totalPackage - basicSalary - hra - variablePay - nps - pf;
-        
-        double grossSalary = basicSalary + hra + splAllowance + variablePay;
-        
-        // Standard deduction based on regime and financial year
-        double standardDeduction = regime.equals("NEW") && financialYear.equals("2025-2026") ? 75000 : 50000;
+        double splAllowance = totalCTC - basicSalary - hra - nps - pf;
+
+        // Gross Salary includes nps but NOT variablePay
+        double grossSalary = basicSalary + hra + splAllowance + nps;
+
+        // Standard deduction based on regime
+        double standardDeduction = regime.equals("NEW") ? 75000 : 50000;
         double professionalTax = 2400;
-        
-        // Net taxable income calculation
-        double taxableIncome = grossSalary - standardDeduction - professionalTax - nps;
+
+        // Net taxable income calculation - Professional tax only deducted in Old Regime
+        double taxableIncome = grossSalary - standardDeduction - nps;
+        if (regime.equals("OLD")) {
+            taxableIncome -= professionalTax; // Only deduct professional tax in Old Regime
+        }
         if (taxableIncome < 0) taxableIncome = 0;
-        
+
         // Round up to nearest 10 (matching Excel CEILING function)
         taxableIncome = Math.ceil(taxableIncome / 10) * 10;
 
         double tax;
         double rebate = 0;
-        
+
         if (regime.equals("NEW")) {
             tax = calculateNewRegimeTax(taxableIncome, financialYear);
             // Rebate calculation for new regime
@@ -47,13 +54,13 @@ public class TaxService {
             tax = calculateOldRegimeTax(taxableIncome);
             rebate = taxableIncome <= 500000 ? Math.min(12500, tax) : 0;
         }
-        
+
         tax = Math.max(0, tax - rebate);
         double cess = Math.round(tax * 0.04);
         double totalTax = tax + cess;
-        
-        // Calculate take home salary
-        double takeHomeSalary = grossSalary - totalTax;
+
+        // CHANGED: Calculate take home salary (deduct NPS and professional tax)
+        double takeHomeSalary = grossSalary - totalTax - nps - pf - professionalTax;
         double monthlyTakeHome = takeHomeSalary / 12;
 
         TaxResponse response = new TaxResponse();
