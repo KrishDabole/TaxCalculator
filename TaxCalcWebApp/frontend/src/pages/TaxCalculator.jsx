@@ -58,13 +58,20 @@ export default function TaxCalculator() {
   };
 
   const calculateSalaryBreakdown = (requestData, taxData) => {
-    const totalPackage = requestData.totalPackage;
-    const basicSalary = totalPackage * 0.4;
-    const hra = totalPackage * 0.2;
+    // CORRECTED: Calculate total CTC (Total Package - Variable Pay) - matches backend
+    const totalCTC = requestData.totalPackage - requestData.variablePay;
+    
+    // CORRECTED: Use totalCTC for calculations - matches backend
+    const basicSalary = totalCTC * 0.4;
+    const hra = totalCTC * 0.2;
     const pf = basicSalary * 0.12;
     
-    const splAllowance = totalPackage - basicSalary - hra - requestData.variablePay - requestData.npsContribution - pf;
-    const grossSalary = basicSalary + hra + splAllowance + parseFloat(requestData.variablePay);
+    // CORRECTED: SPL Allowance calculation - matches backend
+    const splAllowance = totalCTC - basicSalary - hra - requestData.npsContribution - pf;
+    
+    // CORRECTED: Gross Salary includes nps but NOT variablePay - matches backend
+    const grossSalary = basicSalary + hra + splAllowance + requestData.npsContribution;
+    
     const professionalTax = 2400;
     
     setSalaryBreakdown({
@@ -75,9 +82,10 @@ export default function TaxCalculator() {
       grossSalary,
       professionalTax,
       netTaxableIncome: taxData.taxableIncome,
-      standardDeduction: requestData.regime === "NEW" && requestData.financialYear === "2025-2026" ? 75000 : 50000,
+      standardDeduction: requestData.regime === "NEW" ? 75000 : 50000, // CORRECTED: Simplified
       variablePay: requestData.variablePay,
-      npsContribution: requestData.npsContribution
+      npsContribution: requestData.npsContribution,
+      totalCTC // ADDED: For display purposes
     });
   };
 
@@ -100,7 +108,8 @@ Tax Before Cess,${taxResult.taxBeforeCess.toFixed(2)},N/A
 Rebate (U/s 87A),${taxResult.rebate || 0},N/A
 Cess @4%,${taxResult.cess.toFixed(2)},N/A
 Total Tax,${taxResult.totalTax.toFixed(2)},${taxResult.monthlyTax.toFixed(2)}
-Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryBreakdown.pf - salaryBreakdown.professionalTax)/12).toFixed(2)},N/A`;
+Monthly Take Home,${taxResult.monthlyTakeHome.toFixed(2)},N/A
+Yearly Take Home,${taxResult.takeHomeSalary.toFixed(2)},N/A`;
     
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -319,11 +328,11 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                     <div className={`space-y-3 text-lg ${textSecondary}`}>
                       <div className="flex justify-between items-center">
                         <span>CTC (Yearly):</span>
-                        <span className="font-semibold text-xl">{formatCurrency(form.totalPackage - form.variablePay)}</span>
+                        <span className="font-semibold text-xl">{formatCurrency(salaryBreakdown.totalCTC)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>CTC (Monthly):</span>
-                        <span className="font-semibold text-xl">{formatCurrency((form.totalPackage - form.variablePay)/12)}</span>
+                        <span className="font-semibold text-xl">{formatCurrency(salaryBreakdown.totalCTC/12)}</span>
                       </div>
                     </div>
                   </div>
@@ -332,12 +341,12 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                     <h4 className={`font-semibold text-xl mb-4 ${textPrimary} border-b ${borderColor} pb-3`}>Take Home Summary</h4>
                     <div className={`space-y-3 text-lg ${textSecondary}`}>
                       <div className="flex justify-between items-center">
-                        <span>Without NPS (Monthly):</span>
-                        <span className="font-semibold text-xl text-green-600">{formatCurrency((salaryBreakdown.grossSalary - taxResult.totalTax - salaryBreakdown.pf - salaryBreakdown.professionalTax)/12)}</span>
+                        <span>Monthly Take Home:</span>
+                        <span className="font-semibold text-xl text-green-600">{formatCurrency(taxResult.monthlyTakeHome)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span>With NPS (Monthly):</span>
-                        <span className="font-semibold text-xl text-green-600">{formatCurrency((salaryBreakdown.grossSalary - taxResult.totalTax - salaryBreakdown.pf - salaryBreakdown.professionalTax - salaryBreakdown.npsContribution)/12)}</span>
+                        <span>Yearly Take Home:</span>
+                        <span className="font-semibold text-xl text-green-600">{formatCurrency(taxResult.takeHomeSalary)}</span>
                       </div>
                     </div>
                   </div>
@@ -353,7 +362,7 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                         { label: "Basic Salary", value: salaryBreakdown.basicSalary },
                         { label: "HRA", value: salaryBreakdown.hra },
                         { label: "SPL Allowance", value: salaryBreakdown.splAllowance },
-                        { label: "Variable Pay", value: salaryBreakdown.variablePay }
+                        { label: "NPS Contribution", value: salaryBreakdown.npsContribution }
                       ].map((item, index) => (
                         <div key={index} className="flex justify-between items-center">
                           <span>{item.label}:</span>
@@ -427,7 +436,7 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                   </div>
                 </div>
 
-                {/* Take Home Salary */}
+                {/* Take Home Salary - FINAL CORRECTED SECTION */}
                 <div className={`${themeClass("bg-green-50", "bg-green-900/20")} ${themeClass("border-green-200", "border-green-800")} p-6 rounded-3xl backdrop-blur-sm`}>
                   <h4 className={`font-semibold text-2xl mb-6 ${themeClass("text-green-800", "text-green-300")} border-b ${themeClass("border-green-200", "border-green-700")} pb-4`}>Take Home Salary</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -439,13 +448,25 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                           <span>{formatCurrency(salaryBreakdown.grossSalary)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Total Deductions:</span>
-                          <span>- {formatCurrency(taxResult.totalTax + salaryBreakdown.pf + salaryBreakdown.professionalTax)}</span>
+                          <span>Total Tax:</span>
+                          <span>- {formatCurrency(taxResult.totalTax)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Provident Fund:</span>
+                          <span>- {formatCurrency(salaryBreakdown.pf)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Professional Tax:</span>
+                          <span>- {formatCurrency(salaryBreakdown.professionalTax)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>NPS Contribution:</span>
+                          <span>- {formatCurrency(salaryBreakdown.npsContribution)}</span>
                         </div>
                         <div className="flex justify-between border-t pt-3 font-bold text-xl">
                           <span>Net Take Home:</span>
                           <span className={themeClass("text-green-700", "text-green-400")}>
-                            {formatCurrency(salaryBreakdown.grossSalary - taxResult.totalTax - salaryBreakdown.pf - salaryBreakdown.professionalTax)}
+                            {formatCurrency(taxResult.takeHomeSalary)}
                           </span>
                         </div>
                       </div>
@@ -458,13 +479,25 @@ Monthly Take Home,${((salaryBreakdown.grossSalary - taxResult.totalTax - salaryB
                           <span>{formatCurrency(salaryBreakdown.grossSalary/12)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Total Deductions:</span>
-                          <span>- {formatCurrency((taxResult.totalTax + salaryBreakdown.pf + salaryBreakdown.professionalTax)/12)}</span>
+                          <span>Monthly Tax:</span>
+                          <span>- {formatCurrency(taxResult.monthlyTax)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Provident Fund:</span>
+                          <span>- {formatCurrency(salaryBreakdown.pf/12)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Professional Tax:</span>
+                          <span>- {formatCurrency(salaryBreakdown.professionalTax/12)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>NPS Contribution:</span>
+                          <span>- {formatCurrency(salaryBreakdown.npsContribution/12)}</span>
                         </div>
                         <div className="flex justify-between border-t pt-3 font-bold text-xl">
                           <span>Net Take Home:</span>
                           <span className={themeClass("text-green-700", "text-green-400")}>
-                            {formatCurrency((salaryBreakdown.grossSalary - taxResult.totalTax - salaryBreakdown.pf - salaryBreakdown.professionalTax)/12)}
+                            {formatCurrency(taxResult.monthlyTakeHome)}
                           </span>
                         </div>
                       </div>
